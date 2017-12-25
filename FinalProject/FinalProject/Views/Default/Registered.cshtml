@@ -1,0 +1,16 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model FinalProject.Models.RegisteredModel
+
+@{
+    Layout = "~/Views/_Layout.cshtml";
+    ViewData["view_title"] = "Thank You";
+    ViewData["view_style"] = "css/registered.css";
+}
+
+<div style="position: absolute; top: 50%; left:50%; transform: translate(-50%,-50%);">
+    <div style="font-size: x-large;">Thanks for registering, <span style="font-weight: bold;">@Model.FirstName</span>.</div>
+    <div class="col-xs-12" style="height:10px;"></div>
+    <div>You will receive an email to <span style="font-weight: bold;">@Model.Email</span> in a moment.</div>
+    <div class="col-xs-12" style="height:30px;"></div>
+    <a class="btn btn-primary float-right logInButton" asp-action="LogIn" role="button">Log In</a>
+</div>

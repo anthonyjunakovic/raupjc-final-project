@@ -1,0 +1,106 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model FinalProject.Models.SignUpModel
+
+@{
+    Layout = "~/Views/_Layout.cshtml";
+    ViewData["view_title"] = "Sign Up";
+    ViewData["view_style"] = "css/signup.css";
+    ViewData["view_script"] = "js/signup.js";
+}
+
+<div style="width: 100%;" class="row">
+    <div class="col-md-5 d-none d-sm-none d-md-inline">
+        <div style="position: fixed; width: 40%;">
+            <img id="mainImageDesktop" style="width: 100%; height: auto; opacity: 0.65; display: none;" src="~/image/wallpaper/signup.jpg" alt="" onload="onLoadImg()" />
+            <div class="col-xs-12" style="height:10px;"></div>
+            <span style="font-size: larger; line-height: 50px;">Registration progress</span>
+            <div class="progress" style="width: 100%;">
+                <div id="registrationProgressBar" class="progress-bar bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="col-xs-12" style="height:20px;"></div>
+            <div id="usernameInfoData" style="display: none; width: 100%;">
+                <div>Your username is the handle by which your account will be identified. It will be <strong>visible</strong> to the public.</div>
+                <div class="col-xs-12" style="height:20px;"></div>
+                <div style="display: none;" id="accountAddress">
+                    <div>Your account page will be located on:</div>
+                    <div><a id="urlAddress" href="#"></a></div>
+                </div>
+                <div id="idAddress" style="display: none;">
+                    @FinalProject.Program.Address
+                </div>
+            </div>
+            <div id="emailInfoData" style="display: none; width: 100%;">
+                A verification email will be sent to this email address. Don't worry, we will not show your email address to anyone, it will be <strong>hidden</strong> from the public.
+            </div>
+            <div id="passwordInfoData" style="display: none; width: 100%;">
+                Make sure you enter a strong password.
+            </div>
+            <div id="repPasswordInfoData" style="display: none; width: 100%;">
+                Re-enter your password again.
+            </div>
+            <div id="firstNameInfoData" style="display: none; width: 100%;">
+                Your first name will be <strong>hidden</strong> from the public.
+            </div>
+            <div id="lastNameInfoData" style="display: none; width: 100%;">
+                Your last name will be <strong>hidden</strong> from the public.
+            </div>
+            <div id="genderInfoData" style="display: none; width: 100%;">
+                Your gender will be <strong>hidden</strong> from the public.
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <form asp-action="SignUp">
+            <span style="font-size: larger; line-height: 50px;">Pick your username</span>
+            <div class="input-group">
+                <span class="input-group-addon" id="basic-addon1">@@</span>
+                <input asp-for="Username" class="form-control" maxlength="64" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" onkeyup="usernameKeyUp()" onchange="usernameKeyUp()" onfocus="focusChange(0)" onblur="blurChange(0)" />
+            </div>
+            <div class="col-xs-12" style="height:4px;"></div>
+            <div id="usernameInfo" class="altAlert alert-warning">
+                <span id="usernameInfoText"></span>
+            </div>
+
+            <div class="col-xs-12" style="height:30px;"></div>
+
+            <span style="font-size: larger; line-height: 50px;">Login information</span>
+            <input asp-for="Email" class="form-control" placeholder="Email" aria-label="Email" aria-describedby="basic-addon1" onkeyup="emailKeyUp()" onchange="emailKeyUp()" onfocus="focusChange(1)" onblur="blurChange(1)" />
+            <div class="col-xs-12" style="height:4px;"></div>
+            <div id="emailInfo" class="altAlert alert-warning">
+                <span id="emailInfoText"></span>
+            </div>
+            <div class="col-xs-12" style="height:8px;"></div>
+            <input asp-for="Password" type="password" class="form-control" placeholder="Password" aria-label="Password" aria-describedby="basic-addon1" onkeyup="passwordKeyUp()" onchange="passwordKeyUp()" onfocus="focusChange(2)" onblur="blurChange(2)" />
+            <div class="col-xs-12" style="height:4px;"></div>
+            <div id="passwordInfo" class="altAlert alert-warning">
+                <span id="passwordInfoText"></span>
+            </div>
+            <div class="col-xs-12" style="height:8px;"></div>
+            <input asp-for="RepeatPassword" type="password" class="form-control" placeholder="Repeat password" aria-label="Repeat password" aria-describedby="basic-addon1" onkeyup="repPasswordKeyUp()" onchange="repPasswordKeyUp()" onfocus="focusChange(3)" onblur="blurChange(3)" />
+            <div class="col-xs-12" style="height:4px;"></div>
+            <div id="repPasswordInfo" class="altAlert alert-warning">
+                <span id="repPasswordInfoText"></span>
+            </div>
+
+            <div class="col-xs-12" style="height:30px;"></div>
+
+            <span style="font-size: larger; line-height: 50px;">Tell us about yourself</span>
+            <input asp-for="FirstName" class="form-control" placeholder="First name" aria-label="First name" aria-describedby="basic-addon1" onkeyup="validateAll()" onchange="validateAll()" onfocus="focusChange(4)" onblur="blurChange(4)" />
+            <div class="col-xs-12" style="height:8px;"></div>
+            <input asp-for="LastName" class="form-control" placeholder="Last name" aria-label="Last name" aria-describedby="basic-addon1" onkeyup="validateAll()" onchange="validateAll()" onfocus="focusChange(5)" onblur="blurChange(5)" />
+            <div class="col-xs-12" style="height:8px;"></div>
+            <select asp-for="Gender" class="form-control" aria-label="Gender" aria-describedby="basic-addon1" onkeyup="validateAll()" onchange="validateAll()" onfocus="focusChange(6)" onblur="blurChange(6)">
+                <option value="" disabled selected hidden>Gender</option>
+                <option value="0">Female</option>
+                <option value="1">Male</option>
+                <option value="2">Other</option>
+            </select>
+
+            <div class="col-xs-12" style="height:30px;"></div>
+
+            <input id="registerButton" class="btn btn-primary float-right registerButton" type="submit" value="Register" disabled />
+
+            <div class="col-xs-12" style="height:60px;"></div>
+        </form>
+    </div>
+</div>

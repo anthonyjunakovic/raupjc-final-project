@@ -1,0 +1,25 @@
+﻿body {
+    padding-top: 100px;
+    padding-left: 10px;
+}
+
+.altAlert {
+    display: none;
+    margin-bottom: 1px;
+    height: 35px;
+    line-height: 35px;
+    padding: 0px 15px;
+}
+
+.progress-bar {
+    -webkit-transition: width 0.15s ease;
+    transition: width 0.15s ease;
+}
+
+@media (max-width: 768px) {
+    .registerButton {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+
