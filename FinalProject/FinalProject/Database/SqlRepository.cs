@@ -76,16 +76,34 @@ namespace FinalProject.Database
                 Account target;
                 if (Identifier.Contains("@"))
                 {
-                    target = database.Accounts.Where(i => (i.Email.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefault();
+                    target = database.Accounts.Where(i => (!i.UseFacebook) && (i.Email.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefault();
                 }
                 else
                 {
-                    target = database.Accounts.Where(i => (i.Username.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefault();
+                    target = database.Accounts.Where(i => (!i.UseFacebook) && (i.Username.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefault();
                 }
                 if (target != null)
                 {
                     CookieId = target.Id.ToString();
                     CookieHash = Convert.ToBase64String(hashedPassword);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool LoginAccountFacebook(string FacebookID, out string CookieId, out string CookieHash)
+        {
+            CookieId = "";
+            CookieHash = "";
+            if (FacebookID != null)
+            {
+                Account target;
+                target = database.Accounts.Where(i => (i.UseFacebook) && (i.FacebookID == FacebookID)).FirstOrDefault();
+                if (target != null)
+                {
+                    CookieId = target.Id.ToString();
+                    CookieHash = Convert.ToBase64String(target.PasswordHashed);
                     return true;
                 }
             }
@@ -142,6 +160,11 @@ namespace FinalProject.Database
         public void ForceSave()
         {
             database.SaveChanges();
+        }
+
+        public bool CheckFacebookAccount(string FacebookID)
+        {
+            return database.Accounts.Where(i => (i.UseFacebook) && (i.FacebookID == FacebookID)).Count() <= 0;
         }
     }
 }

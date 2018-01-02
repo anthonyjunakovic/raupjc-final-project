@@ -26,7 +26,7 @@ namespace FinalProject.Controllers
             switch (repository.GetAccountStatus(Request, Response, out userAccount))
             {
                 case AccountStatus.OK:
-                    break; // TODO
+                    return RedirectToAction("Explore");
                 case AccountStatus.Inactive:
                     return RedirectToAction("Activate");
             }
@@ -231,6 +231,93 @@ namespace FinalProject.Controllers
             }
             repository.ClearAccountStatus(Response);
             return RedirectToAction("Index");
+        }
+
+        [Route("[action]")]
+        public IActionResult FAQ()
+        {
+            return View();
+        }
+
+        [Route("[action]")]
+        public IActionResult Explore()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult CheckFacebookAccount(string Value)
+        {
+            if (Value != null)
+            {
+                return Json(new { Unregistered = repository.CheckFacebookAccount(Value).ToString().ToLower() });
+            }
+            return Json(new { Unregistered = "false" });
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult RegisterFacebookAccount(string Username, string AccessToken)
+        {
+            Account userAccount;
+            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            {
+                return RedirectToAction("Index");
+            }
+            if ((Username == null) || (AccessToken == null))
+            {
+                return RedirectToAction("Error");
+            }
+            string email, firstName, lastName, facebookId;
+            Gender gender;
+            if (Services.Facebook.GetFacebookInfo(AccessToken, out email, out firstName, out lastName, out gender, out facebookId))
+            {
+                Account account = new Account(Username, email, (Username + AccessToken), firstName, lastName, gender);
+                account.Verified = true;
+                account.UseFacebook = true;
+                account.FacebookID = facebookId;
+                if (repository.AddAccount(account))
+                {
+                    logger.LogInformation($"User @{account.Username} (ID: {account.Id}) registered with Facebook account (Facebook ID: {account.FacebookID})");
+                    string cookieId, cookieHash;
+                    if (repository.LoginAccountFacebook(facebookId, out cookieId, out cookieHash))
+                    {
+                        repository.SetAccountStatus(Response, cookieId, cookieHash);
+                        return RedirectToAction("Index");
+                    }
+                    return RedirectToAction("Error");
+                }
+            }
+            return RedirectToAction("Error");
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult LogInFacebook(string AccessToken)
+        {
+            Account userAccount;
+            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            {
+                return RedirectToAction("Index");
+            }
+            if (AccessToken == null)
+            {
+                return RedirectToAction("Error");
+            }
+            string email, firstName, lastName, facebookId;
+            Gender gender;
+            if (Services.Facebook.GetFacebookInfo(AccessToken, out email, out firstName, out lastName, out gender, out facebookId))
+            {
+                string cookieId, cookieHash;
+                if (repository.LoginAccountFacebook(facebookId, out cookieId, out cookieHash))
+                {
+                    repository.SetAccountStatus(Response, cookieId, cookieHash);
+                    return RedirectToAction("Index");
+                }
+                return RedirectToAction("Error");
+            }
+            return RedirectToAction("Error");
         }
     }
 }

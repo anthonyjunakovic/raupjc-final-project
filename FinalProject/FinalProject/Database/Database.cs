@@ -23,6 +23,8 @@ namespace FinalProject.Database
             modelBuilder.Entity<Account>().Property(i => i.UserGender).IsRequired();
             modelBuilder.Entity<Account>().Property(i => i.Verified).IsRequired();
             modelBuilder.Entity<Account>().Property(i => i.VerificationCode).IsRequired();
+            modelBuilder.Entity<Account>().Property(i => i.UseFacebook).IsRequired();
+            modelBuilder.Entity<Account>().Property(i => i.FacebookID).IsRequired();
         }
     }
 }

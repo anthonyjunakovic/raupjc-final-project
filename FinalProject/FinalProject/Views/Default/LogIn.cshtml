@@ -4,8 +4,38 @@
 @{
     Layout = "~/Views/_Layout.cshtml";
     ViewData["view_title"] = "Log In";
+    ViewData["view_script"] = "js/login.js";
     ViewData["view_style"] = "css/login.css";
 }
+
+<div class="modal fade" id="modalWindow" tabindex="-1" role="dialog" aria-labelledby="modalWindow" aria-hidden="true">
+    <div class="vertical-alignment-helper">
+        <div class="modal-dialog vertical-align-center" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Pick an username</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="basic-addon1">@@</span>
+                        <input name="UsernameFB" id="UsernameFB" class="form-control" maxlength="64" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" onkeyup="usernameKeyUp()" onchange="usernameKeyUp()" />
+                    </div>
+                    <div class="col-xs-12" style="height:4px;"></div>
+                    <div id="usernameInfo" class="altAlert alert-warning">
+                        <span id="usernameInfoText"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="continueButtonFB" type="button" class="btn btn-primary" onclick="continueClick()" disabled>Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="allForm">
     <div style="font-size: x-large;">Login</div>
@@ -25,16 +55,29 @@
                     <strong>Email verified successfully.</strong> You can now log into your account.
                 </div>
             }
-
         }
+        <div id="idFacebook" class="alert alert-danger" style="display: none;">
+            <strong>Facebook login failed.</strong> <span id="fbMsg"></span>
+        </div>
         <input asp-for="Identifier" class="form-control" placeholder="Username or Email" aria-label="Username or Email" aria-describedby="basic-addon1" />
         <div class="col-xs-12" style="height:8px;"></div>
         <input asp-for="Password" type="password" class="form-control" maxlength="64" placeholder="Password" aria-label="Password" aria-describedby="basic-addon1" />
         <div class="col-xs-12" style="height:20px;"></div>
         <input id="loginButton" class="btn btn-primary float-right button" type="submit" value="Log in" />
-        <a href="#" class="btn btn-secondary button btn-light border-dark" role="button">
-            Login with <img src="~/image/elements/google.png" height="24" />
+        <a id="facebookButton" href="javascript:facebookClick()" class="btn btn-secondary button btn-light border-dark" role="button">
+            Login with <img src="~/image/elements/facebook.png" height="24" />
         </a>
         <div class="col-xs-12" style="height:60px;"></div>
+    </form>
+
+    <form id="fbAccountCreator" asp-action="RegisterFacebookAccount" method="post" style="display: none;">
+        <input id="fbAccountUsername" name="Username" type="text" autocomplete="off" />
+        <input id="fbAccountAccessToken" name="AccessToken" type="text" autocomplete="off" />
+        <input type="submit" />
+    </form>
+
+    <form id="fbAccountLogin" asp-action="LogInFacebook" method="post" style="display: none;">
+        <input id="fbLoginAccessToken" name="AccessToken" type="text" autocomplete="off" />
+        <input type="submit" />
     </form>
 </div>

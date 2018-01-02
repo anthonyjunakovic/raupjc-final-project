@@ -24,12 +24,18 @@ namespace FinalProject.Database
         public Gender UserGender { get; set; }
         public bool Verified { get; set; }
         public int VerificationCode { get; set; }
+        public bool UseFacebook { get; set; }
+        public string FacebookID { get; set; }
 
         public Account()
         {
+            Verified = false;
+            VerificationCode = Models.ActivateModel.GenerateCode();
+            UseFacebook = false;
+            FacebookID = "";
         }
 
-        public Account(string Username, string Email, string Password, string FirstName, string LastName, Gender UserGender)
+        public Account(string Username, string Email, string Password, string FirstName, string LastName, Gender UserGender) : this()
         {
             this.Username = Username;
             this.Email = Email.ToLower();
@@ -37,8 +43,6 @@ namespace FinalProject.Database
             this.FirstName = FirstName;
             this.LastName = LastName;
             this.UserGender = UserGender;
-            Verified = false;
-            VerificationCode = Models.ActivateModel.GenerateCode();
         }
 
         public static byte[] HashPassword(string Password)
