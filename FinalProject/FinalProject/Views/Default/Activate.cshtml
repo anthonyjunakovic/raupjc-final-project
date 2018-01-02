@@ -1,0 +1,38 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model FinalProject.Models.ActivateModel
+
+@{
+    Layout = "~/Views/_Layout.cshtml";
+    ViewData["view_title"] = "Account activation";
+    ViewData["view_script"] = "js/activate.js";
+    ViewData["view_style"] = "css/activate.css";
+}
+
+<div id="mainForm">
+    <div style="font-size: xx-large;">Email verification</div>
+    <div class="col-xs-12" style="height:12px;"></div>
+    <form asp-action="Activate">
+        @if (Model != null)
+        {
+            @if (Model.ErrorMessage)
+            {
+                <div class="alert alert-warning">
+                    <strong>Invalid confirmation code.</strong> Please try again.
+                </div>
+            }
+            else if (Model.InfoMessage)
+            {
+                <div class="alert alert-info">
+                    <strong>Resent verification mail.</strong> You should receive it shortly.
+                </div>
+            }
+        }
+        <input asp-for="Code" class="form-control" autocomplete="off" placeholder="Activation code" aria-label="Activation code" aria-describedby="basic-addon1"  maxlength="6" onkeyup="onChange()" onchange="onChange()" />
+        <div class="col-xs-12" style="height:18px;"></div>
+        <div id="confirmationHelp"><strong>Didn't receive the confirmation mail?</strong></div>
+        <div id="confirmationHelp">Click <a asp-action="ResendMail">here</a> and we will send you a new one.</div>
+        <div class="col-xs-12" style="height:10px;"></div>
+        <input id="activateButton" class="btn btn-primary float-right" type="submit" value="Activate" disabled />
+        <div class="col-xs-12" style="height:60px;"></div>
+    </form>
+</div>

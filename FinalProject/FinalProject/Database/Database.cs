@@ -22,6 +22,7 @@ namespace FinalProject.Database
             modelBuilder.Entity<Account>().Property(i => i.LastName).IsRequired();
             modelBuilder.Entity<Account>().Property(i => i.UserGender).IsRequired();
             modelBuilder.Entity<Account>().Property(i => i.Verified).IsRequired();
+            modelBuilder.Entity<Account>().Property(i => i.VerificationCode).IsRequired();
         }
     }
 }

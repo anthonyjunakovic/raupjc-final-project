@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
 
 <html>
     <head>
@@ -51,15 +53,31 @@
                     <li class="nav-item">
                         <a class="nav-link" href="@Url.Action("FAQ")">FAQ</a>
                     </li>
-                    <li class="nav-tabs"></li>
+                    <li class="nav-tabs border-secondary"></li>
                 </ul>
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("SignUp")">Sign Up</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("LogIn")">Log In</a>
-                    </li>
+                    @if (HttpContextAccessor.HttpContext.Request.Cookies.ContainsKey("userId"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                My Account
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right bg-dark text-light" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item bg-dark text-light" href="#">Dashboard</a>
+                                <div class="dropdown-divider border-secondary"></div>
+                                <a class="dropdown-item bg-dark text-light" href="@Url.Action("LogOut")">Log out</a>
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("SignUp")">Sign Up</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("LogIn")">Log In</a>
+                        </li>
+                    }
                 </ul>
             </div>
         </nav>

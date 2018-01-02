@@ -10,6 +10,7 @@ namespace FinalProject.Services
     public static class Email
     {
         private static SmtpClient SMTP;
+        private static object mutexLock = new object();
 
         static Email()
         {
@@ -19,16 +20,19 @@ namespace FinalProject.Services
             SMTP.Credentials = new NetworkCredential(EmailInfo.EmailUsername, EmailInfo.EmailPassword);
         }
 
-        public static void SendVerification(string to, string code)
+        public static void SendVerification(string to, string code, string firstLine = "Thank you for registering.")
         {
             string url = Program.UrlAddress + "Activate?Email=" + WebUtility.UrlEncode(to) + "&" + "Code=" + WebUtility.UrlEncode(code);
             MailMessage mail = new MailMessage();
             mail.From = new MailAddress(EmailInfo.EmailAddress);
             mail.To.Add(to);
             mail.IsBodyHtml = true;
-            mail.Body = $"Thank you for registering.<br/><br/>Your verification code is: <strong>{code}</strong><br/><br/>Activation link: <a href=\"{url}\">Activate</a><br/><br/>This is an automated response mail, please do not respond to it.";
+            mail.Body = $"{firstLine}<br/><br/>Your verification code is: <strong>{code}</strong><br/><br/>Activation link: <a href=\"{url}\">Activate</a><br/><br/>This is an automated response mail, please do not respond to it.";
             mail.Subject = "Pinboard Confirmation Email";
-            SMTP.Send(mail);
+            lock (mutexLock)
+            {
+                SMTP.Send(mail);
+            }
         }
     }
 }

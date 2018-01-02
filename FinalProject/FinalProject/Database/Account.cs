@@ -25,6 +25,10 @@ namespace FinalProject.Database
         public bool Verified { get; set; }
         public int VerificationCode { get; set; }
 
+        public Account()
+        {
+        }
+
         public Account(string Username, string Email, string Password, string FirstName, string LastName, Gender UserGender)
         {
             this.Username = Username;
@@ -34,10 +38,10 @@ namespace FinalProject.Database
             this.LastName = LastName;
             this.UserGender = UserGender;
             Verified = false;
-            VerificationCode = (new Random()).Next(100000, 999999);
+            VerificationCode = Models.ActivateModel.GenerateCode();
         }
 
-        public byte[] HashPassword(string Password)
+        public static byte[] HashPassword(string Password)
         {
             byte[] output;
             using (MD5 md5 = MD5.Create())
