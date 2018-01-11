@@ -30,10 +30,7 @@ namespace FinalProject.Services
             mail.Body = $"{firstLine}<br/><br/>Your verification code is: <strong>{code}</strong><br/><br/>Activation link: <a href=\"{url}\">Activate</a><br/><br/>This is an automated response mail, please do not respond to it.";
             mail.Subject = "Pinboard Confirmation Email";
             // Essentially not that great concept, but considering the fact that this app will be used by 1-2 users at a time, shouldn't generate any problems.
-            lock (mutexLock)
-            {
-                SMTP.Send(mail);
-            }
+            SMTP.Send(mail);
         }
     }
 }
