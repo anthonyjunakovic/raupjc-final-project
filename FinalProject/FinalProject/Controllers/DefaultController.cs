@@ -2,6 +2,7 @@
 using FinalProject.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 
@@ -12,11 +13,14 @@ namespace FinalProject.Controllers
     {
         private IRepository repository;
         private ILogger<DefaultController> logger;
+        private IConfiguration configuration;
 
-        public DefaultController(IRepository repository, ILogger<DefaultController> logger)
+        public DefaultController(IRepository repository, ILogger<DefaultController> logger, IConfiguration configuration)
         {
             this.repository = repository;
             this.logger = logger;
+            this.configuration = configuration;
+            Services.EmailInfo.Configuration = configuration;
         }
 
         [Route("")]

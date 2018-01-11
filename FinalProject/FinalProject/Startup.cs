@@ -24,6 +24,7 @@ namespace FinalProject
             services.AddTransient(s => new Database.Database(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IConfiguration>(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
