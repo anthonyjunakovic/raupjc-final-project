@@ -5,6 +5,7 @@ namespace FinalProject
 {
     public static class Program
     {
+        // Some metadata about the website
         public const string Address = "pinboard.azurewebsites.net/";
         public const string UrlAddress = "https://" + Address;
 
