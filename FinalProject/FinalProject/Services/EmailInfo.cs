@@ -9,35 +9,35 @@ namespace FinalProject.Services
         public static string SmtpServer {
             get
             {
-                return Configuration.GetSection("Data").GetSection("Server").Value;
+                return Configuration.GetSection("EmailData").GetSection("Server").Value;
             }
         }
         public static int SmtpPort
         {
             get
             {
-                return int.Parse(Configuration.GetSection("Data").GetSection("Port").Value);
+                return int.Parse(Configuration.GetSection("EmailData").GetSection("Port").Value);
             }
         }
         public static string EmailAddress
         {
             get
             {
-                return Configuration.GetSection("Data").GetSection("Address").Value;
+                return Configuration.GetSection("EmailData").GetSection("Address").Value;
             }
         }
         public static string EmailUsername
         {
             get
             {
-                return Configuration.GetSection("Data").GetSection("Username").Value;
+                return Configuration.GetSection("EmailData").GetSection("Username").Value;
             }
         }
         public static string EmailPassword
         {
             get
             {
-                return Configuration.GetSection("Data").GetSection("Password").Value;
+                return Configuration.GetSection("EmailData").GetSection("Password").Value;
             }
         }
     }

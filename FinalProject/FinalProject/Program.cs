@@ -5,8 +5,8 @@ namespace FinalProject
 {
     public static class Program
     {
-        public const string Address = "192.168.1.104:51208/";
-        public const string UrlAddress = "http://" + Address;
+        public const string Address = "pinboard.azurewebsites.net/";
+        public const string UrlAddress = "https://" + Address;
 
         public static void Main(string[] args)
         {
