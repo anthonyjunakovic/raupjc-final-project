@@ -6,6 +6,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 
+/*
+ * NOTE: Email service is disabled, hence all the commented-out code.
+ */
 namespace FinalProject.Controllers
 {
     [Route("")]
@@ -20,7 +23,7 @@ namespace FinalProject.Controllers
             this.repository = repository;
             this.logger = logger;
             this.configuration = configuration;
-            Services.EmailInfo.Configuration = configuration;
+            // Services.EmailInfo.Configuration = configuration;
         }
 
         [Route("")]
@@ -60,12 +63,13 @@ namespace FinalProject.Controllers
             if ((ModelState.IsValid) && (model.IsModelValid()))
             {
                 Account account = new Account(model.Username, model.Email, model.Password, model.FirstName, model.LastName, model.GetGender());
+                account.Verified = true; // SINCE THERE IS NO WAY OF CONFIRMING THE EMAIL ADDRESS
                 if (repository.AddAccount(account))
                 {
                     logger.LogInformation($"User @{account.Username} (ID: {account.Id}) registered with email {account.Email} (Verification code: {account.VerificationCode})");
                     try
                     {
-                        Services.Email.SendVerification(account.Email, account.VerificationCode.ToString());
+                        // Services.Email.SendVerification(account.Email, account.VerificationCode.ToString());
                     }
                     catch (Exception ex)
                     {
@@ -214,7 +218,7 @@ namespace FinalProject.Controllers
             repository.ForceSave();
             try
             {
-                Services.Email.SendVerification(userAccount.Email, userAccount.VerificationCode.ToString(), "A new verification code was requested.");
+                // Services.Email.SendVerification(userAccount.Email, userAccount.VerificationCode.ToString(), "A new verification code was requested.");
             }
             catch (Exception ex)
             {

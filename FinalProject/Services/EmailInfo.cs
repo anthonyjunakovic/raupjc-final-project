@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿/* // EMAIL SERVICE DISABLED
+
+using Microsoft.Extensions.Configuration;
 
 namespace FinalProject.Services
 {
@@ -42,3 +44,4 @@ namespace FinalProject.Services
         }
     }
 }
+*/

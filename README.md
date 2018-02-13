@@ -8,12 +8,12 @@ This project is an image sharing platform. It uses Bootstrap and jQuery for the 
 - https://pinboard.azurewebsites.net/
 
 # Important
-- Automaitic mailing system does not work (fix needed)
+- Automatic emailing service has been disabled due Gmail and other providers always banning the email account (and I cannot afford SendGrid or similar transactional email services).
 
-# Default Account Info:
+# Default Account Info
  - Username: defaultuser
  - Password: defaultpass
 
-# Images taken from:
+# Images taken from
 - pexels.com
 - pixabay.com

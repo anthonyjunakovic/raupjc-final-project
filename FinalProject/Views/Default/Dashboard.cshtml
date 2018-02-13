@@ -6,11 +6,19 @@
     ViewData["view_title"] = "Dashboard";
 }
 
-<div>
-    <div style="height: 80px;"></div>
+<div style="margin-left: 10px; margin-right: 10px;">
+    <div style="height: 100px;"></div>
     @if (!Model.IsFacebook)
     {
-        <div>change password</div>
+        <h3>Change password</h3>
+        <div style="height: 10px;"></div>
+        <div style="margin-left: 15px;">
+            <div style="margin-bottom: 5px;"><input name="opass" id="opass" type="password" autocomplete="off" placeholder="Old password" /></div>
+            <div style="margin-bottom: 5px;"><input name="npass" id="npass" type="password" autocomplete="off" placeholder="New password" /></div>
+            <div style="margin-bottom: 5px;"><input name="rpass" id="rpass" type="password" autocomplete="off" placeholder="Repeat password" /></div>
+        </div>
+        <div style="height: 20px;"></div>
     }
-    <div>change account info</div>
+    <h3>Change Account Info</h3>
+
 </div>

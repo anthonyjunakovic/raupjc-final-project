@@ -10,7 +10,9 @@
 <div style="position: absolute; top: 50%; left:50%; transform: translate(-50%,-50%);">
     <div style="font-size: x-large;">Thanks for registering, <span style="font-weight: bold;">@Model.FirstName</span>.</div>
     <div class="col-xs-12" style="height:10px;"></div>
-    <div>You will receive an email to <span style="font-weight: bold;">@Model.Email</span> in a moment.</div>
+    <!-- EMAIL WILL NOT BE SENT TO THE PROVIDED EMAIL ADDRESS DUE TO THE EMAIL SERVICE BEING REMOVED -->
+    <!-- <div>You will receive an email to <span style="font-weight: bold;">@Model.Email</span> in a moment.</div> -->
+    <div>You can sign into your account now.</div>
     <div class="col-xs-12" style="height:30px;"></div>
     <a class="btn btn-primary float-right logInButton" asp-action="LogIn" role="button">Log In</a>
 </div>

@@ -1,10 +1,8 @@
-﻿using System.Net;
+﻿/* // EMAIL SERVICE DISABLED
+
+using System.Net;
 using System.Net.Mail;
 
-/*
- * EmailInfo file is not included because it contains sensible information.
- * It is essentially just a static class with SMTP login information.
- */
 namespace FinalProject.Services
 {
     public static class Email
@@ -37,3 +35,4 @@ namespace FinalProject.Services
         }
     }
 }
+*/
