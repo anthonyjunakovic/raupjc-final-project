@@ -18,6 +18,7 @@ namespace FinalProject.Database
         bool LoginAccount(string Identifier, string Password, out string CookieId, out string CookieHash);
         bool LoginAccountFacebook(string FacebookID, out string CookieId, out string CookieHash);
         void SetAccountStatus(HttpResponse response, string CookieId, string CookieHash);
+        Account GetAccount(string Username, string Password);
         AccountStatus GetAccountStatus(HttpRequest request, HttpResponse response, out Account account);
         void ClearAccountStatus(HttpResponse response);
         void ForceSave();

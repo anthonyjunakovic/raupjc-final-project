@@ -4,21 +4,36 @@
 @{
     Layout = "~/Views/_Layout.cshtml";
     ViewData["view_title"] = "Dashboard";
+    ViewData["view_style"] = "css/dashboard.css";
+    ViewData["view_script"] = "js/dashboard.js";
 }
 
-<div style="margin-left: 10px; margin-right: 10px;">
+<div id="mainForm" style="margin-left: 10px; margin-right: 10px;">
     <div style="height: 100px;"></div>
+    <h3>Account Details</h3>
+    <div style="height: 10px;"></div>
+    <div>Username: <a href="@(FinalProject.Program.UrlAddress + "User/" + Model.Username)">@@<strong id="userName">@Model.Username</strong></a></div>
+    <div style="height: 2px;"></div>
+    <div>First Name: <strong>@Model.FirstName</strong></div>
+    <div style="height: 2px;"></div>
+    <div>Last Name: <strong>@Model.LastName</strong></div>
+    <div style="height: 2px;"></div>
+    <div>Gender: <strong>@Model.Gender</strong></div>
+    <div style="height: 30px;"></div>
     @if (!Model.IsFacebook)
     {
-        <h3>Change password</h3>
-        <div style="height: 10px;"></div>
-        <div style="margin-left: 15px;">
-            <div style="margin-bottom: 5px;"><input name="opass" id="opass" type="password" autocomplete="off" placeholder="Old password" /></div>
-            <div style="margin-bottom: 5px;"><input name="npass" id="npass" type="password" autocomplete="off" placeholder="New password" /></div>
-            <div style="margin-bottom: 5px;"><input name="rpass" id="rpass" type="password" autocomplete="off" placeholder="Repeat password" /></div>
+        <div id="successPw" style="display: none;" class="alert alert-success">
+            <strong>Success!</strong> Password changed.
         </div>
-        <div style="height: 20px;"></div>
+        <div id="failurePw" style="display: none;" class="alert alert-danger">
+            <strong>Failure!</strong> Invalid password.
+        </div>
+        <h3>Change Password</h3>
+        <div style="height: 10px;"></div>
+        <input style="width: 100%; margin-bottom: 5px;" class="form-control" name="opass" id="opass" type="password" autocomplete="off" placeholder="Old password" onchange="onChangePw();" onkeyup="onChangePw();" />
+        <input style="width: 100%; margin-bottom: 5px;" class="form-control" name="npass" id="npass" type="password" autocomplete="off" placeholder="New password" onchange="onChangePw();" onkeyup="onChangePw();" />
+        <input style="width: 100%; margin-bottom: 15px;" class="form-control" name="rpass" id="rpass" type="password" autocomplete="off" placeholder="Repeat password" onchange="onChangePw();" onkeyup="onChangePw();" />
+        <button id="pwbtn" type="button" class="btn btn-info float-right buttons" onclick="clickPw();" disabled>Update Password</button>
+        <div style="height: 70px;"></div>
     }
-    <h3>Change Account Info</h3>
-
 </div>

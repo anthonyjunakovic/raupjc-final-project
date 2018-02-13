@@ -118,6 +118,12 @@ namespace FinalProject.Database
             response.Cookies.Append("userHash", CookieHash, options);
         }
 
+        public Account GetAccount(string Username, string Password)
+        {
+            byte[] HashedPassword = Account.HashPassword(Password);
+            return database.Accounts.Where(i => (i.Username == Username) && (i.PasswordHashed == HashedPassword)).FirstOrDefault();
+        }
+
         public AccountStatus GetAccountStatus(HttpRequest request, HttpResponse response, out Account account)
         {
             account = null;

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 
 /*
  * NOTE: Email service is disabled, hence all the commented-out code.
@@ -336,7 +337,44 @@ namespace FinalProject.Controllers
             {
                 return RedirectToAction("Index");
             }
-            return View(new DashboardModel(userAccount.UseFacebook));
+            return View(new DashboardModel(userAccount));
+        }
+
+        [Route("[action]")]
+        public IActionResult MyUploads()
+        {
+            // TO FIX !!!!!
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public IActionResult ChangePassword(string Username, string OldPassword, string NewPassword)
+        {
+            if ((OldPassword == null) || (OldPassword == "") || (NewPassword == null) || (NewPassword == ""))
+            {
+                return Json(new { Success = "false" });
+            }
+            if ((OldPassword.Length < 6) || (OldPassword.Length > 64) || (NewPassword.Length < 6) || (NewPassword.Length > 64))
+            {
+                return Json(new { Success = "false" });
+            }
+            Account userAccount = repository.GetAccount(Username, OldPassword);
+            if (userAccount == null)
+            {
+                return Json(new { Success = "false" });
+            }
+            if (!Account.HashPassword(OldPassword).SequenceEqual(userAccount.PasswordHashed))
+            {
+                return Json(new { Success = "false" });
+            }
+            if (OldPassword == NewPassword)
+            {
+                return Json(new { Success = "true" });
+            }
+            userAccount.PasswordHashed = Account.HashPassword(NewPassword);
+            repository.ForceSave();
+            return Json(new { Success = "true" });
         }
     }
 }
