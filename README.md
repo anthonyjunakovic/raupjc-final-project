@@ -2,17 +2,17 @@
 
 This project is an image sharing platform. It uses Bootstrap and jQuery for the client-side, and AspNet Core Mvc for the server-side. Every other aspect of the page is made from the ground up.
 
-(c) Antonio Junaković 2017
+(c) Antonio Junaković 2017-2018
 
 # Project URL
 - https://pinboard.azurewebsites.net/
 
 # Important
-- Account system uses email confirmation, and Outlook.com SMTP server is used. It might break (account gets banned, SMTP server turns off, etc...), so the registration will throw an exception (but it will complete, regardless of the situation). To get the verification code, you can search the local database, or simply, you can check the Verified field.
+- Automaitic mailing system does not work (fix needed)
 
 # Default Account Info:
- - Username: --- !
- - Password: --- !
+ - Username: defaultuser
+ - Password: defaultpass
 
 # Images taken from:
 - pexels.com

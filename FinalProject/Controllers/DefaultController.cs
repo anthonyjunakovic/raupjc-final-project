@@ -323,5 +323,16 @@ namespace FinalProject.Controllers
             }
             return RedirectToAction("Error");
         }
+
+        [Route("[action]")]
+        public IActionResult Dashboard()
+        {
+            Account userAccount;
+            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+            {
+                return RedirectToAction("Index");
+            }
+            return View(new DashboardModel(userAccount.UseFacebook));
+        }
     }
 }

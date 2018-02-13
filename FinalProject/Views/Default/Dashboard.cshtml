@@ -1,0 +1,16 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model FinalProject.Models.DashboardModel
+
+@{
+    Layout = "~/Views/_Layout.cshtml";
+    ViewData["view_title"] = "Dashboard";
+}
+
+<div>
+    <div style="height: 80px;"></div>
+    @if (!Model.IsFacebook)
+    {
+        <div>change password</div>
+    }
+    <div>change account info</div>
+</div>
