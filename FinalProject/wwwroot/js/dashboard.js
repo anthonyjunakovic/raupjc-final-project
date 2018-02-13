@@ -27,6 +27,7 @@ function clickPw() {
         $("#opass").val("");
         $("#npass").val("");
         $("#rpass").val("");
+        $("#pwbtn").attr("disabled", "disabled");
         if (data["success"] == "true") {
             $("#successPw").slideDown(200, function () {
                 setTimeout(function () {

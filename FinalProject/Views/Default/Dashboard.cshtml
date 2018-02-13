@@ -20,8 +20,14 @@
     <div style="height: 2px;"></div>
     <div>Gender: <strong>@Model.Gender</strong></div>
     <div style="height: 30px;"></div>
-    @if (!Model.IsFacebook)
+    @if (Model.IsFacebook)
     {
+        <div style="height: 15px;"></div>
+        <div>This account is tied to a Facebook <a href="@Model.FacebookURL">profile</a>.</div>
+    }
+    else
+    {
+        <div style="height: 30px;"></div>
         <div id="successPw" style="display: none;" class="alert alert-success">
             <strong>Success!</strong> Password changed.
         </div>

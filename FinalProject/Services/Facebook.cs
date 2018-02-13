@@ -7,6 +7,11 @@ namespace FinalProject.Services
 {
     public static class Facebook
     {
+        public static string GetProfileURL(string FacebookID)
+        {
+            return @"https://www.facebook.com/" + FacebookID;
+        }
+
         public static bool GetFacebookInfo(string AccessToken, out string Email, out string FirstName, out string LastName, out Gender gender, out string FacebookID)
         {
             string uri = @"https://graph.facebook.com/v2.11/me" + $"?access_token={WebUtility.UrlEncode(AccessToken)}&fields=email,first_name,last_name,gender";
