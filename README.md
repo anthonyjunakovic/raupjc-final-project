@@ -9,6 +9,7 @@ This project is an image sharing platform. It uses Bootstrap and jQuery for the 
 
 # Important
 - Automatic emailing service has been disabled due Gmail and other providers always banning the email account (and I cannot afford SendGrid or similar transactional email services).
+- Azure Storage service could not be acquired for free, therefore, there are no file uploads in the web app (only posting image URLs as of now).
 
 # Default Account Info
  - Username: defaultuser
