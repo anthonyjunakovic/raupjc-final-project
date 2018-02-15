@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace FinalProject.Database
 {
@@ -17,18 +18,18 @@ namespace FinalProject.Database
             this.database = database;
         }
 
-        public bool AddAccount(Account account)
+        public async Task<bool> AddAccount(Account account)
         {
-            if ((CheckUsername(account.Username)) && (CheckEmail(account.Email)))
+            if ((await CheckUsername(account.Username)) && (await CheckEmail(account.Email)))
             {
                 database.Accounts.Add(account);
-                database.SaveChanges();
+                await database.SaveChangesAsync();
                 return true;
             }
             return false;
         }
 
-        public bool CheckUsername(string username)
+        public async Task<bool> CheckUsername(string username)
         {
             foreach (char c in username)
             {
@@ -41,26 +42,26 @@ namespace FinalProject.Database
             {
                 return false;
             }
-            return database.Accounts.Where(i => (i.Username.ToLower() == username.ToLower())).Count() <= 0;
+            return (await database.Accounts.Where(i => (i.Username.ToLower() == username.ToLower())).CountAsync()) <= 0;
         }
 
-        public bool CheckEmail(string email)
+        public async Task<bool> CheckEmail(string email)
         {
-            return database.Accounts.Where(i => (i.Email.ToLower() == email.ToLower())).Count() <= 0;
+            return (await database.Accounts.Where(i => (i.Email.ToLower() == email.ToLower())).CountAsync()) <= 0;
         }
 
-        public bool VerifyAccount(string Email, string Code)
+        public async Task<bool> VerifyAccount(string Email, string Code)
         {
             if ((Email != null) && (Code != null))
             {
                 int vefificationCode;
                 if (int.TryParse(Code, out vefificationCode))
                 {
-                    Account target = database.Accounts.Where(i => (i.Email.ToLower() == Email.ToLower()) && (i.VerificationCode == vefificationCode) && (!i.Verified)).FirstOrDefault();
+                    Account target = await database.Accounts.Where(i => (i.Email.ToLower() == Email.ToLower()) && (i.VerificationCode == vefificationCode) && (!i.Verified)).FirstAsync();
                     if (target != null)
                     {
                         target.Verified = true;
-                        database.SaveChanges();
+                        await database.SaveChangesAsync();
                         return true;
                     }
                 }
@@ -68,48 +69,54 @@ namespace FinalProject.Database
             return false;
         }
 
-        public bool LoginAccount(string Identifier, string Password, out string CookieId, out string CookieHash)
+        public async Task<AccountResult> LoginAccount(string Identifier, string Password)
         {
-            CookieId = "";
-            CookieHash = "";
+            AccountResult result = new AccountResult();
+            result.CookieId = "";
+            result.CookieHash = "";
             if ((Identifier != null) && (Password != null))
             {
                 byte[] hashedPassword = Account.HashPassword(Password);
                 Account target;
                 if (Identifier.Contains("@"))
                 {
-                    target = database.Accounts.Where(i => (!i.UseFacebook) && (i.Email.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefault();
+                    target = await database.Accounts.Where(i => (!i.UseFacebook) && (i.Email.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefaultAsync();
                 }
                 else
                 {
-                    target = database.Accounts.Where(i => (!i.UseFacebook) && (i.Username.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefault();
+                    target = await database.Accounts.Where(i => (!i.UseFacebook) && (i.Username.ToLower() == Identifier.ToLower()) && (i.PasswordHashed == hashedPassword)).FirstOrDefaultAsync();
                 }
                 if (target != null)
                 {
-                    CookieId = target.Id.ToString();
-                    CookieHash = Convert.ToBase64String(hashedPassword);
-                    return true;
+                    result.Ok = true;
+                    result.CookieId = target.Id.ToString();
+                    result.CookieHash = Convert.ToBase64String(hashedPassword);
+                    return result;
                 }
             }
-            return false;
+            result.Ok = false;
+            return result;
         }
 
-        public bool LoginAccountFacebook(string FacebookID, out string CookieId, out string CookieHash)
+        public async Task<AccountResult> LoginAccountFacebook(string FacebookID)
         {
-            CookieId = "";
-            CookieHash = "";
+            AccountResult result = new AccountResult();
+            result.CookieId = "";
+            result.CookieHash = "";
             if (FacebookID != null)
             {
                 Account target;
-                target = database.Accounts.Where(i => (i.UseFacebook) && (i.FacebookID == FacebookID)).FirstOrDefault();
+                target = await database.Accounts.Where(i => (i.UseFacebook) && (i.FacebookID == FacebookID)).FirstOrDefaultAsync();
                 if (target != null)
                 {
-                    CookieId = target.Id.ToString();
-                    CookieHash = Convert.ToBase64String(target.PasswordHashed);
-                    return true;
+                    result.Ok = true;
+                    result.CookieId = target.Id.ToString();
+                    result.CookieHash = Convert.ToBase64String(target.PasswordHashed);
+                    return result;
                 }
             }
-            return false;
+            result.Ok = false;
+            return result;
         }
 
         public void SetAccountStatus(HttpResponse response, string CookieId, string CookieHash)
@@ -120,15 +127,16 @@ namespace FinalProject.Database
             response.Cookies.Append("userHash", CookieHash, options);
         }
 
-        public Account GetAccount(string Username, string Password)
+        public async Task<Account> GetAccount(string Username, string Password)
         {
             byte[] HashedPassword = Account.HashPassword(Password);
-            return database.Accounts.Where(i => (i.Username == Username) && (i.PasswordHashed == HashedPassword)).FirstOrDefault();
+            return await database.Accounts.Where(i => (i.Username == Username) && (i.PasswordHashed == HashedPassword)).FirstOrDefaultAsync();
         }
 
-        public AccountStatus GetAccountStatus(HttpRequest request, HttpResponse response, out Account account)
+        public async Task<AccountStatusPair> GetAccountStatus(HttpRequest request, HttpResponse response)
         {
-            account = null;
+            AccountStatusPair asp = new AccountStatusPair();
+            asp.account = null;
             if ((request.Cookies.ContainsKey("userId")) && (request.Cookies.ContainsKey("userHash")))
             {
                 int userId;
@@ -141,22 +149,26 @@ namespace FinalProject.Database
                     }
                     catch
                     {
-                        return AccountStatus.Invalid;
+                        asp.status = AccountStatus.Invalid;
+                        return asp;
                     }
-                    Account target = database.Accounts.Where(i => (i.Id == userId) && (i.PasswordHashed == userHash)).FirstOrDefault();
+                    Account target = await database.Accounts.Where(i => (i.Id == userId) && (i.PasswordHashed == userHash)).FirstOrDefaultAsync();
                     if (target != null)
                     {
-                        account = target;
+                        asp.account = target;
                         if (target.Verified)
                         {
-                            return AccountStatus.OK;
+                            asp.status = AccountStatus.OK;
+                            return asp;
                         }
-                        return AccountStatus.Inactive;
+                        asp.status = AccountStatus.Inactive;
+                        return asp;
                     }
                     ClearAccountStatus(response);
                 }
             }
-            return AccountStatus.Invalid;
+            asp.status = AccountStatus.Invalid;
+            return asp;
         }
 
         public void ClearAccountStatus(HttpResponse response)
@@ -165,33 +177,33 @@ namespace FinalProject.Database
             response.Cookies.Delete("userHash");
         }
 
-        public void ForceSave()
+        public async void ForceSave()
         {
-            database.SaveChanges();
+            await database.SaveChangesAsync();
         }
 
-        public bool CheckFacebookAccount(string FacebookID)
+        public async Task<bool> CheckFacebookAccount(string FacebookID)
         {
-            return database.Accounts.Where(i => (i.UseFacebook) && (i.FacebookID == FacebookID)).Count() <= 0;
+            return (await database.Accounts.Where(i => (i.UseFacebook) && (i.FacebookID == FacebookID)).CountAsync()) <= 0;
         }
 
-        public Post UploadPost(Account account, string Title, string ImageURL)
+        public async Task<Post> UploadPost(Account account, string Title, string ImageURL)
         {
             Post post = new Post(Title, account, ImageURL);
             database.Posts.Add(post);
             account.Posts.Add(post);
-            database.SaveChanges();
+            await database.SaveChangesAsync();
             return post;
         }
 
-        public Post GetPost(int id)
+        public async Task<Post> GetPost(int id)
         {
-            return database.Posts.Where(p => (!p.Deleted) && (p.Id == id)).Include(p => p.Owner).FirstOrDefault();
+            return await database.Posts.Where(p => (!p.Deleted) && (p.Id == id)).Include(p => p.Owner).FirstOrDefaultAsync();
         }
 
-        public Models.UserModel GetUserModel(string name)
+        public async Task<Models.UserModel> GetUserModel(string name)
         {
-            Account account = database.Accounts.Where(u => u.Username == name).Include(u => u.Posts).FirstOrDefault();
+            Account account = await database.Accounts.Where(u => u.Username == name).Include(u => u.Posts).FirstOrDefaultAsync();
             if (account != null)
             {
                 Models.UserModel model = new Models.UserModel();
@@ -213,22 +225,22 @@ namespace FinalProject.Database
             return null;
         }
 
-        public bool DeletePost(int id, Account account)
+        public async Task<bool> DeletePost(int id, Account account)
         {
-            Post post = GetPost(id);
+            Post post = await GetPost(id);
             if ((post != null) && (post.Owner == account))
             {
                 post.Deleted = true;
-                database.SaveChanges();
+                await database.SaveChangesAsync();
                 return true;
             }
             return false;
         }
 
-        public LinkedList<Models.UserModel.PostModel> GetRecentPosts()
+        public async Task<LinkedList<Models.UserModel.PostModel>> GetRecentPosts()
         {
             LinkedList<Models.UserModel.PostModel> list = new LinkedList<Models.UserModel.PostModel>();
-            List<Post> posts = database.Posts.OrderByDescending(i => i.Id).Where(i => !i.Deleted).Take(50).ToList();
+            List<Post> posts = await database.Posts.OrderByDescending(i => i.Id).Where(i => !i.Deleted).Take(50).ToListAsync();
             foreach (Post p in posts)
             {
                 Models.UserModel.PostModel model = new Models.UserModel.PostModel();

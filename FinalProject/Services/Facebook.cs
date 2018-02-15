@@ -2,9 +2,20 @@
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 
 namespace FinalProject.Services
 {
+    public class FacebookInfo
+    {
+        public bool Ok { get; set; }
+        public string Email { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public Gender Gender { get; set; }
+        public string FacebookId { get; set; }
+    }
+
     public static class Facebook
     {
         public static string GetProfileURL(string FacebookID)
@@ -12,8 +23,9 @@ namespace FinalProject.Services
             return @"https://www.facebook.com/" + FacebookID;
         }
 
-        public static bool GetFacebookInfo(string AccessToken, out string Email, out string FirstName, out string LastName, out Gender gender, out string FacebookID)
+        public static async Task<FacebookInfo> GetFacebookInfo(string AccessToken)
         {
+            FacebookInfo fi = new FacebookInfo();
             string uri = @"https://graph.facebook.com/v2.11/me" + $"?access_token={WebUtility.UrlEncode(AccessToken)}&fields=email,first_name,last_name,gender";
 
             try
@@ -23,50 +35,53 @@ namespace FinalProject.Services
 
                 string data;
 
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                using (HttpWebResponse response = (HttpWebResponse)(await request.GetResponseAsync()))
                 {
                     using (Stream stream = response.GetResponseStream())
                     {
                         using (StreamReader reader = new StreamReader(stream))
                         {
-                            data = reader.ReadToEnd();
+                            data = await reader.ReadToEndAsync();
                         }
                     }
                 }
 
                 JObject result = JObject.Parse(data);
 
-                Email = result["email"].ToString();
-                FirstName = result["first_name"].ToString();
-                LastName = result["last_name"].ToString();
+                fi.Email = result["email"].ToString();
+                fi.FirstName = result["first_name"].ToString();
+                fi.LastName = result["last_name"].ToString();
 
                 string localGender = result["gender"].ToString().Trim().ToLower();
                 switch (localGender)
                 {
                     case "male":
-                        gender = Gender.Male;
+                        fi.Gender = Gender.Male;
                         break;
                     case "female":
-                        gender = Gender.Female;
+                        fi.Gender = Gender.Female;
                         break;
                     default:
-                        gender = Gender.Other;
+                        fi.Gender = Gender.Other;
                         break;
                 }
 
-                FacebookID = result["id"].ToString();
-                return true;
+                fi.FacebookId = result["id"].ToString();
+
+                fi.Ok = true;
+                return fi;
             }
             catch { }
 
-            Email = "";
-            FirstName = "";
-            LastName = "";
+            fi.Email = "";
+            fi.FirstName = "";
+            fi.LastName = "";
 
-            gender = Gender.Other;
-            FacebookID = "";
+            fi.Gender = Gender.Other;
+            fi.FacebookId = "";
 
-            return false;
+            fi.Ok = false;
+            return fi;
         }
     }
 }

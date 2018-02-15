@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 /*
  * NOTE: Email service is disabled, hence all the commented-out code.
@@ -28,10 +29,10 @@ namespace FinalProject.Controllers
         }
 
         [Route("")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            Account userAccount;
-            switch (repository.GetAccountStatus(Request, Response, out userAccount))
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            switch (asp.status)
             {
                 case AccountStatus.OK:
                     return RedirectToAction("Explore");
@@ -42,10 +43,10 @@ namespace FinalProject.Controllers
         }
 
         [Route("[action]")]
-        public IActionResult SignUp()
+        public async Task<IActionResult> SignUp()
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Invalid)
             {
                 return RedirectToAction("Index");
             }
@@ -54,10 +55,10 @@ namespace FinalProject.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult SignUp(SignUpModel model)
+        public async Task<IActionResult> SignUp(SignUpModel model)
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Invalid)
             {
                 return RedirectToAction("Index");
             }
@@ -65,7 +66,7 @@ namespace FinalProject.Controllers
             {
                 Account account = new Account(model.Username, model.Email, model.Password, model.FirstName, model.LastName, model.GetGender());
                 account.Verified = true; // SINCE THERE IS NO WAY OF CONFIRMING THE EMAIL ADDRESS
-                if (repository.AddAccount(account))
+                if (await repository.AddAccount(account))
                 {
                     logger.LogInformation($"User @{account.Username} (ID: {account.Id}) registered with email {account.Email} (Verification code: {account.VerificationCode})");
                     try
@@ -85,22 +86,22 @@ namespace FinalProject.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult CheckUsername(string Value)
+        public async Task<IActionResult> CheckUsername(string Value)
         {
             if (Value != null)
             {
-                return Json(new { Available = repository.CheckUsername(Value).ToString().ToLower() });
+                return Json(new { Available = (await repository.CheckUsername(Value)).ToString().ToLower() });
             }
             return Json(new { Available = "false" });
         }
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult CheckEmail(string Value)
+        public async Task<IActionResult> CheckEmail(string Value)
         {
             if (Value != null)
             {
-                return Json(new { Available = repository.CheckEmail(Value).ToString().ToLower() });
+                return Json(new { Available = (await repository.CheckEmail(Value)).ToString().ToLower() });
             }
             return Json(new { Available = "false" });
         }
@@ -124,17 +125,16 @@ namespace FinalProject.Controllers
 
         [HttpGet]
         [Route("[action]")]
-        public IActionResult Activate(string Email, string Code, bool? Resent)
+        public async Task<IActionResult> Activate(string Email, string Code, bool? Resent)
         {
-            Account userAccount;
-            AccountStatus accountStatus = repository.GetAccountStatus(Request, Response, out userAccount);
-            if (accountStatus == AccountStatus.OK)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status == AccountStatus.OK)
             {
                 return RedirectToAction("Index");
             }
             else if ((Email == null) && (Code == null))
             {
-                if (accountStatus == AccountStatus.Inactive)
+                if (asp.status == AccountStatus.Inactive)
                 {
                     if (Resent.HasValue)
                     {
@@ -143,7 +143,7 @@ namespace FinalProject.Controllers
                     return View();
                 }
             }
-            else if (repository.VerifyAccount(Email, Code))
+            else if (await repository.VerifyAccount(Email, Code))
             {
                 return RedirectToAction("LogIn", new { Verified = true });
             }
@@ -152,16 +152,16 @@ namespace FinalProject.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult Activate(ActivateModel model)
+        public async Task<IActionResult> Activate(ActivateModel model)
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Inactive)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Inactive)
             {
                 return RedirectToAction("Index");
             }
             else if (ModelState.IsValid)
             {
-                if (repository.VerifyAccount(userAccount.Email, model.Code))
+                if (await repository.VerifyAccount(asp.account.Email, model.Code))
                 {
                     return RedirectToAction("LogIn");
                 }
@@ -170,10 +170,10 @@ namespace FinalProject.Controllers
         }
 
         [Route("[action]")]
-        public IActionResult LogIn(bool? Verified)
+        public async Task<IActionResult> LogIn(bool? Verified)
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Invalid)
             {
                 return RedirectToAction("Index");
             }
@@ -186,19 +186,19 @@ namespace FinalProject.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult LogIn(LogInModel model)
+        public async Task<IActionResult> LogIn(LogInModel model)
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Invalid)
             {
                 return RedirectToAction("Index");
             }
             else if (ModelState.IsValid)
             {
-                string userId, userHash;
-                if (repository.LoginAccount(model.Identifier, model.Password, out userId, out userHash))
+                AccountResult ar = await repository.LoginAccount(model.Identifier, model.Password);
+                if (ar.Ok)
                 {
-                    repository.SetAccountStatus(Response, userId, userHash);
+                    repository.SetAccountStatus(Response, ar.CookieId, ar.CookieHash);
                     return RedirectToAction("Index");
                 }
                 model.ErrorMessage = true;
@@ -208,14 +208,14 @@ namespace FinalProject.Controllers
         }
 
         [Route("[action]")]
-        public IActionResult ResendMail()
+        public async Task<IActionResult> ResendMail()
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Inactive)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Inactive)
             {
                 return RedirectToAction("Index");
             }
-            userAccount.VerificationCode = ActivateModel.GenerateCode();
+            asp.account.VerificationCode = ActivateModel.GenerateCode();
             repository.ForceSave();
             try
             {
@@ -226,15 +226,15 @@ namespace FinalProject.Controllers
                 logger.LogError($"AUTO-MAIL FAILED: {ex.Message}");
                 return RedirectToAction("Error");
             }
-            logger.LogInformation($"User @{userAccount.Username} (ID: {userAccount.Id}) requested a new verification code to email {userAccount.Email} (Verification code: {userAccount.VerificationCode})");
+            logger.LogInformation($"User @{asp.account.Username} (ID: {asp.account.Id}) requested a new verification code to email {asp.account.Email} (Verification code: {asp.account.VerificationCode})");
             return RedirectToAction("Activate", new { Resent = true });
         }
 
         [Route("[action]")]
-        public IActionResult LogOut()
+        public async Task<IActionResult> LogOut()
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) == AccountStatus.Invalid)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status == AccountStatus.Invalid)
             {
                 return RedirectToAction("Index");
             }
@@ -249,28 +249,28 @@ namespace FinalProject.Controllers
         }
 
         [Route("[action]")]
-        public IActionResult Explore()
+        public async Task<IActionResult> Explore()
         {
-            return View(repository.GetRecentPosts());
+            return View(await repository.GetRecentPosts());
         }
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult CheckFacebookAccount(string Value)
+        public async Task<IActionResult> CheckFacebookAccount(string Value)
         {
             if (Value != null)
             {
-                return Json(new { Unregistered = repository.CheckFacebookAccount(Value).ToString().ToLower() });
+                return Json(new { Unregistered = (await repository.CheckFacebookAccount(Value)).ToString().ToLower() });
             }
             return Json(new { Unregistered = "false" });
         }
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult RegisterFacebookAccount(string Username, string AccessToken)
+        public async Task<IActionResult> RegisterFacebookAccount(string Username, string AccessToken)
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Invalid)
             {
                 return RedirectToAction("Index");
             }
@@ -278,21 +278,20 @@ namespace FinalProject.Controllers
             {
                 return RedirectToAction("Error");
             }
-            string email, firstName, lastName, facebookId;
-            Gender gender;
-            if (Services.Facebook.GetFacebookInfo(AccessToken, out email, out firstName, out lastName, out gender, out facebookId))
+            Services.FacebookInfo fi = await Services.Facebook.GetFacebookInfo(AccessToken);
+            if (fi.Ok)
             {
-                Account account = new Account(Username, email, (Username + AccessToken), firstName, lastName, gender);
+                Account account = new Account(Username, fi.Email, (Username + AccessToken), fi.FirstName, fi.LastName, fi.Gender);
                 account.Verified = true;
                 account.UseFacebook = true;
-                account.FacebookID = facebookId;
-                if (repository.AddAccount(account))
+                account.FacebookID = fi.FacebookId;
+                if (await repository.AddAccount(account))
                 {
                     logger.LogInformation($"User @{account.Username} (ID: {account.Id}) registered with Facebook account (Facebook ID: {account.FacebookID})");
-                    string cookieId, cookieHash;
-                    if (repository.LoginAccountFacebook(facebookId, out cookieId, out cookieHash))
+                    AccountResult ar = await repository.LoginAccountFacebook(fi.FacebookId);
+                    if (ar.Ok)
                     {
-                        repository.SetAccountStatus(Response, cookieId, cookieHash);
+                        repository.SetAccountStatus(Response, ar.CookieId, ar.CookieHash);
                         return RedirectToAction("Index");
                     }
                     return RedirectToAction("Error");
@@ -303,10 +302,10 @@ namespace FinalProject.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult LogInFacebook(string AccessToken)
+        public async Task<IActionResult> LogInFacebook(string AccessToken)
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.Invalid)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.Invalid)
             {
                 return RedirectToAction("Index");
             }
@@ -314,14 +313,13 @@ namespace FinalProject.Controllers
             {
                 return RedirectToAction("Error");
             }
-            string email, firstName, lastName, facebookId;
-            Gender gender;
-            if (Services.Facebook.GetFacebookInfo(AccessToken, out email, out firstName, out lastName, out gender, out facebookId))
+            Services.FacebookInfo fi = await Services.Facebook.GetFacebookInfo(AccessToken);
+            if (fi.Ok)
             {
-                string cookieId, cookieHash;
-                if (repository.LoginAccountFacebook(facebookId, out cookieId, out cookieHash))
+                AccountResult ar = await repository.LoginAccountFacebook(fi.FacebookId);
+                if (ar.Ok)
                 {
-                    repository.SetAccountStatus(Response, cookieId, cookieHash);
+                    repository.SetAccountStatus(Response, ar.CookieId, ar.CookieHash);
                     return RedirectToAction("Index");
                 }
                 return RedirectToAction("Error");
@@ -330,19 +328,19 @@ namespace FinalProject.Controllers
         }
 
         [Route("[action]")]
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.OK)
             {
                 return RedirectToAction("Index");
             }
-            return View(new DashboardModel(userAccount));
+            return View(new DashboardModel(asp.account));
         }
 
         [HttpPost]
         [Route("[action]")]
-        public IActionResult ChangePassword(string Username, string OldPassword, string NewPassword)
+        public async Task<IActionResult> ChangePassword(string Username, string OldPassword, string NewPassword)
         {
             if ((OldPassword == null) || (OldPassword == "") || (NewPassword == null) || (NewPassword == ""))
             {
@@ -352,7 +350,7 @@ namespace FinalProject.Controllers
             {
                 return Json(new { Success = "false" });
             }
-            Account userAccount = repository.GetAccount(Username, OldPassword);
+            Account userAccount = await repository.GetAccount(Username, OldPassword);
             if (userAccount == null)
             {
                 return Json(new { Success = "false" });
@@ -372,53 +370,52 @@ namespace FinalProject.Controllers
 
         [HttpGet, HttpPost]
         [Route("[action]")]
-        public IActionResult Upload(UploadModel model)
+        public async Task<IActionResult> Upload(UploadModel model)
         {
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.OK)
             {
                 return RedirectToAction("Index");
             }
             if ((ModelState.IsValid) && (model.IsModelValid()))
             {
-                Post post = repository.UploadPost(userAccount, model.Title, model.ImageURL);
+                Post post = await repository.UploadPost(asp.account, model.Title, model.ImageURL);
                 return RedirectToAction("ViewPost", new { id = post.Id });
             }
             return View(model);
         }
 
         [Route("[action]")]
-        public IActionResult ViewPost(int id)
+        public async Task<IActionResult> ViewPost(int id)
         {
-            Account userAccount;
-            repository.GetAccountStatus(Request, Response, out userAccount);
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
 
-            Post post = repository.GetPost(id);
+            Post post = await repository.GetPost(id);
             PostModel model = new PostModel();
             model.Id = post.Id;
             model.Title = post.Title;
-            model.Owned = ((userAccount != null) && (userAccount == post.Owner));
+            model.Owned = ((asp.account != null) && (asp.account == post.Owner));
             model.OwnerName = post.Owner.Username;
             model.ImageURL = post.PostURL;
             return View(model);
         }
 
         [Route("[action]/{id?}")]
-        public IActionResult User(string id)
+        public async Task<IActionResult> User(string id)
         {
             UserModel um = null;
             if (id != null)
             {
-                um = repository.GetUserModel(id);
+                um = await repository.GetUserModel(id);
             }
             if (um == null)
             {
-                Account userAccount;
-                if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+                AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+                if (asp.status != AccountStatus.OK)
                 {
                     return RedirectToAction("Error");
                 }
-                um = repository.GetUserModel(userAccount.Username);
+                um = await repository.GetUserModel(asp.account.Username);
                 if (um == null)
                 {
                     return RedirectToAction("Error");
@@ -435,18 +432,18 @@ namespace FinalProject.Controllers
         
         [HttpGet]
         [Route("[action]")]
-        public IActionResult DeletePost(int? id)
+        public async Task<IActionResult> DeletePost(int? id)
         {
             if (!id.HasValue)
             {
                 return RedirectToAction("Error");
             }
-            Account userAccount;
-            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+            AccountStatusPair asp = await repository.GetAccountStatus(Request, Response);
+            if (asp.status != AccountStatus.OK)
             {
                 return RedirectToAction("Error");
             }
-            if (repository.DeletePost(id.Value, userAccount))
+            if (await repository.DeletePost(id.Value, asp.account))
             {
                 return RedirectToAction("User");
             }
