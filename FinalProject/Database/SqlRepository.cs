@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 namespace FinalProject.Database
@@ -171,6 +173,71 @@ namespace FinalProject.Database
         public bool CheckFacebookAccount(string FacebookID)
         {
             return database.Accounts.Where(i => (i.UseFacebook) && (i.FacebookID == FacebookID)).Count() <= 0;
+        }
+
+        public Post UploadPost(Account account, string Title, string ImageURL)
+        {
+            Post post = new Post(Title, account, ImageURL);
+            database.Posts.Add(post);
+            account.Posts.Add(post);
+            database.SaveChanges();
+            return post;
+        }
+
+        public Post GetPost(int id)
+        {
+            return database.Posts.Where(p => (!p.Deleted) && (p.Id == id)).Include(p => p.Owner).FirstOrDefault();
+        }
+
+        public Models.UserModel GetUserModel(string name)
+        {
+            Account account = database.Accounts.Where(u => u.Username == name).Include(u => u.Posts).FirstOrDefault();
+            if (account != null)
+            {
+                Models.UserModel model = new Models.UserModel();
+                model.UserID = account.Id;
+                model.UserName = account.Username;
+                foreach (Post p in account.Posts)
+                {
+                    if (!p.Deleted)
+                    {
+                        Models.UserModel.PostModel pm = new Models.UserModel.PostModel();
+                        pm.Id = p.Id;
+                        pm.Title = p.Title;
+                        pm.URL = p.PostURL;
+                        model.Posts.AddFirst(pm);
+                    }
+                }
+                return model;
+            }
+            return null;
+        }
+
+        public bool DeletePost(int id, Account account)
+        {
+            Post post = GetPost(id);
+            if ((post != null) && (post.Owner == account))
+            {
+                post.Deleted = true;
+                database.SaveChanges();
+                return true;
+            }
+            return false;
+        }
+
+        public LinkedList<Models.UserModel.PostModel> GetRecentPosts()
+        {
+            LinkedList<Models.UserModel.PostModel> list = new LinkedList<Models.UserModel.PostModel>();
+            List<Post> posts = database.Posts.OrderByDescending(i => i.Id).Where(i => !i.Deleted).Take(50).ToList();
+            foreach (Post p in posts)
+            {
+                Models.UserModel.PostModel model = new Models.UserModel.PostModel();
+                model.Id = p.Id;
+                model.Title = p.Title;
+                model.URL = p.PostURL;
+                list.AddLast(model);
+            }
+            return list;
         }
     }
 }

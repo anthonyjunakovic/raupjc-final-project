@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace FinalProject.Database
 {
@@ -23,5 +24,10 @@ namespace FinalProject.Database
         void ClearAccountStatus(HttpResponse response);
         void ForceSave();
         bool CheckFacebookAccount(string FacebookID);
+        Post UploadPost(Account account, string Title, string ImageURL);
+        Post GetPost(int id);
+        Models.UserModel GetUserModel(string name);
+        bool DeletePost(int id, Account account);
+        LinkedList<Models.UserModel.PostModel> GetRecentPosts();
     }
 }

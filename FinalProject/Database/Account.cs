@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -26,6 +27,7 @@ namespace FinalProject.Database
         public int VerificationCode { get; set; }
         public bool UseFacebook { get; set; }
         public string FacebookID { get; set; }
+        public IList<Post> Posts { get; set; }
 
         public Account()
         {
@@ -33,6 +35,7 @@ namespace FinalProject.Database
             VerificationCode = Models.ActivateModel.GenerateCode();
             UseFacebook = false;
             FacebookID = "";
+            Posts = new List<Post>();
         }
 
         public Account(string Username, string Email, string Password, string FirstName, string LastName, Gender UserGender) : this()

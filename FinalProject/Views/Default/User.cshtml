@@ -1,16 +1,18 @@
 ﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@model LinkedList<FinalProject.Models.UserModel.PostModel>
+@model FinalProject.Models.UserModel
 
 @{
     Layout = "~/Views/_Layout.cshtml";
-    ViewData["view_title"] = "Explore";
+    ViewData["view_title"] = Model.UserName;
     ViewData["view_style"] = "css/post.css";
 }
 
 <div style="margin-bottom: 100px;"></div>
 <div style="margin: 20px;">
+    <h3>Posts by <strong>@@@Model.UserName</strong></h3>
+    <div style="margin-bottom: 40px;"></div>
     <div style="position: absolute; left: 50%; width: 80%; transform: translate(-50%, 0%);">
-        @foreach (FinalProject.Models.UserModel.PostModel p in Model)
+        @foreach (FinalProject.Models.UserModel.PostModel p in Model.Posts)
         {
             @Html.Partial("_PostPartial", p);
         }

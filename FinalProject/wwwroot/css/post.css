@@ -1,0 +1,13 @@
+﻿.postimg {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    border-radius: 5px;
+    filter: brightness(100%);
+    transition: filter 0.2s;
+}
+
+.postimg:hover {
+    filter: brightness(50%);
+    transition: filter 0.2s;
+}

@@ -5,6 +5,7 @@ namespace FinalProject.Database
     public class Database : DbContext
     {
         public IDbSet<Account> Accounts { get; set; }
+        public IDbSet<Post> Posts { get; set; }
 
         public Database(string ConnectionString) : base(ConnectionString)
         {
@@ -25,6 +26,13 @@ namespace FinalProject.Database
             modelBuilder.Entity<Account>().Property(i => i.VerificationCode).IsRequired();
             modelBuilder.Entity<Account>().Property(i => i.UseFacebook).IsRequired();
             modelBuilder.Entity<Account>().Property(i => i.FacebookID).IsRequired();
+            modelBuilder.Entity<Account>().HasMany(i => i.Posts).WithRequired(i => i.Owner);
+
+            modelBuilder.Entity<Post>().HasKey(i => i.Id);
+            modelBuilder.Entity<Post>().Property(i => i.Title);
+            modelBuilder.Entity<Post>().HasRequired(i => i.Owner);
+            modelBuilder.Entity<Post>().Property(i => i.PostURL).IsRequired();
+            modelBuilder.Entity<Post>().Property(i => i.Deleted).IsRequired();
         }
     }
 }

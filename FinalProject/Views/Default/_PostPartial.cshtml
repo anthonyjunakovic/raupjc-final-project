@@ -1,0 +1,6 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model FinalProject.Models.UserModel.PostModel
+
+<a asp-action="ViewPost" asp-all-route-data="@Model.GetRouteData()" title="@Model.Title" style="position: relative; display: inline-block; left: 5px; right: 5px; width: 260px; height: 260px;">
+    <img class="postimg" src="@Model.URL" />
+</a>

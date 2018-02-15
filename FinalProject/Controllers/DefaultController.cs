@@ -251,7 +251,7 @@ namespace FinalProject.Controllers
         [Route("[action]")]
         public IActionResult Explore()
         {
-            return View();
+            return View(repository.GetRecentPosts());
         }
 
         [HttpPost]
@@ -340,13 +340,6 @@ namespace FinalProject.Controllers
             return View(new DashboardModel(userAccount));
         }
 
-        [Route("[action]")]
-        public IActionResult MyUploads()
-        {
-            // TO FIX !!!!!
-            return RedirectToAction("Index");
-        }
-
         [HttpPost]
         [Route("[action]")]
         public IActionResult ChangePassword(string Username, string OldPassword, string NewPassword)
@@ -375,6 +368,89 @@ namespace FinalProject.Controllers
             userAccount.PasswordHashed = Account.HashPassword(NewPassword);
             repository.ForceSave();
             return Json(new { Success = "true" });
+        }
+
+        [HttpGet, HttpPost]
+        [Route("[action]")]
+        public IActionResult Upload(UploadModel model)
+        {
+            Account userAccount;
+            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+            {
+                return RedirectToAction("Index");
+            }
+            if ((ModelState.IsValid) && (model.IsModelValid()))
+            {
+                Post post = repository.UploadPost(userAccount, model.Title, model.ImageURL);
+                return RedirectToAction("ViewPost", new { id = post.Id });
+            }
+            return View(model);
+        }
+
+        [Route("[action]")]
+        public IActionResult ViewPost(int id)
+        {
+            Account userAccount;
+            repository.GetAccountStatus(Request, Response, out userAccount);
+
+            Post post = repository.GetPost(id);
+            PostModel model = new PostModel();
+            model.Id = post.Id;
+            model.Title = post.Title;
+            model.Owned = ((userAccount != null) && (userAccount == post.Owner));
+            model.OwnerName = post.Owner.Username;
+            model.ImageURL = post.PostURL;
+            return View(model);
+        }
+
+        [Route("[action]/{id?}")]
+        public IActionResult User(string id)
+        {
+            UserModel um = null;
+            if (id != null)
+            {
+                um = repository.GetUserModel(id);
+            }
+            if (um == null)
+            {
+                Account userAccount;
+                if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+                {
+                    return RedirectToAction("Error");
+                }
+                um = repository.GetUserModel(userAccount.Username);
+                if (um == null)
+                {
+                    return RedirectToAction("Error");
+                }
+            }
+            return View(um);
+        }
+
+        [Route("[action]")]
+        public IActionResult MyUploads()
+        {
+            return RedirectToAction("User");
+        }
+        
+        [HttpGet]
+        [Route("[action]")]
+        public IActionResult DeletePost(int? id)
+        {
+            if (!id.HasValue)
+            {
+                return RedirectToAction("Error");
+            }
+            Account userAccount;
+            if (repository.GetAccountStatus(Request, Response, out userAccount) != AccountStatus.OK)
+            {
+                return RedirectToAction("Error");
+            }
+            if (repository.DeletePost(id.Value, userAccount))
+            {
+                return RedirectToAction("User");
+            }
+            return RedirectToAction("Error");
         }
     }
 }

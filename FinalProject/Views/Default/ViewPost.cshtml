@@ -1,0 +1,41 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model FinalProject.Models.PostModel
+
+@{
+    Layout = "~/Views/_Layout.cshtml";
+    ViewData["view_title"] = Model.Title;
+}
+
+<div id="msgModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Are you sure?</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Image will be gone forever (a very long time.)</p>
+            </div>
+            <div class="modal-footer">
+                <a class="btn btn-danger" asp-action="DeletePost" asp-all-route-data="@Model.GetRouteData()" role="button">Yes</a>
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div style="height: 100px;"></div>
+<div style="position: absolute; left:50%; height: 75%; transform: translate(-50%, 0%);">
+    <a href="@Model.ImageURL"><img src="@Model.ImageURL" style="height: 100%;" /></a>
+    <div style="margin-bottom: 10px;"></div>
+    @if (Model.Owned)
+    {
+        <button type="button" class="btn btn-danger buttons btn-lg" data-toggle="modal" data-target="#msgModal" style="height: 50px;">Delete</button>
+        <div style="font-size: large;" class="float-right">Shared by <strong><a href="@(FinalProject.Program.UrlAddress + "User/" + Model.OwnerName)">you</a></strong></div>
+    }
+    else
+    {
+        <div style="font-size: large;" class="float-right">Shared by <strong><a href="@(FinalProject.Program.UrlAddress + "User/" + Model.OwnerName)">@@@Model.OwnerName</a></strong></div>
+    }
+</div>
